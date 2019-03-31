@@ -6,8 +6,8 @@ StopWhenUnneeded=yes
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/sbin/bcachectl suspend /etc/bcache/bcache.config
-ExecStop=/usr/sbin/bcachectl load /etc/bcache/bcache.config
+ExecStart=/usr/sbin/bcachectl suspend /etc/bcache/bcache.conf
+ExecStop=/usr/sbin/bcachectl load /etc/bcache/bcache.conf
 
 [Install]
 WantedBy=sleep.target
