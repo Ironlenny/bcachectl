@@ -110,7 +110,7 @@ impl Commands {
             },
             // Set all device cache modes to 'none'
             Cli::Suspend {path} => {
-                let mut config = self.parse_conf(path.to_path_buf()).unwrap();
+                let mut config = self.parse_conf(path.to_path_buf())?;
 
                 for dev in config.device.iter_mut() {
                     dev.cache_mode = Some(String::from("none"));
