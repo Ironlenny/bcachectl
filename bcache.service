@@ -1,5 +1,5 @@
 [Unit]
-Description=Load bcache settings
+Description=load bcache settings
 Before=multi-user.target
 
 [Service]
