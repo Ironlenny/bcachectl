@@ -1,0 +1,13 @@
+[Unit]
+Description=bcache suspend/resume
+Before=sleep.target
+StopWhenUnneeded=yes
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/bcachectl suspend /etc/bcache/bcache.config
+ExecStop=/usr/sbin/bcachectl load /etc/bcache/bcache.config
+
+[Install]
+WantedBy=sleep.target
