@@ -1,7 +1,7 @@
-use exitfailure::exitfailure;
+use exitfailure::ExitFailure;
 
-fn main() -> result<(), exitfailure> {
-    let mut commands = bcachectl::commands::new();
+fn main() -> Result<(), ExitFailure> {
+    let mut commands = bcachectl::Commands::new();
     let com_vec = commands.parse_args()?;
     commands.gen_commands(com_vec);
     let outputs = commands.run_commands()?;
@@ -10,5 +10,5 @@ fn main() -> result<(), exitfailure> {
         print!("{}", output);
     }
 
-    ok(())
+    Ok(())
 }
