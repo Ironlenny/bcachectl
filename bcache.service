@@ -1,0 +1,11 @@
+[Unit]
+Description=Load bcache settings
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/bcachectl load /etc/bcache/bcache.conf
+
+[Install]
+WantedBy=multi-user.target
