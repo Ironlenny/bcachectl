@@ -1,7 +1,7 @@
 Hello All,
 
 I am writing a command-line tool for Bcache This was prompted by Bcache's 
-difficulting handling suspend/resume[1][2], and by my personal experience with 
+difficulting handling suspend/resume[1] [2], and by my personal experience with 
 managing Bcache setups. This is very much a work-in-progress. I've never written
 a command-line tool, and I'm teaching myself Rust. My hope is to make easier 
 Bcache managment by providing a central location for device configurations, and
