@@ -1,11 +1,11 @@
+use exitfailure::ExitFailure;
+use failure::ResultExt;
+use serde_derive::Deserialize;
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use std::collections::HashMap;
-use failure::ResultExt;
-use exitfailure::ExitFailure;
 use toml;
-use serde_derive::Deserialize;
 
 // Holds the per device configuration
 #[derive(Debug, Deserialize)]
@@ -19,7 +19,7 @@ pub struct Device {
     name: String,
     cache_mode: Option<String>,
     sequential_cutoff: Option<u32>,
-    get_setting: Option<String>
+    get_setting: Option<String>,
 }
 
 // Struct for the `Commands` object
@@ -30,8 +30,11 @@ pub struct Commands {
 
 // Declare command-line arguments
 #[derive(Debug, StructOpt)]
-#[structopt(about = "A program to control Bcache devices", rename_all =
-            "kebab-case", author = "Jacob Riddle")]
+#[structopt(
+    about = "A program to control Bcache devices",
+    rename_all = "kebab-case",
+    author = "Jacob Riddle"
+)]
 enum Cli {
     /// Set device settings
     #[structopt(name = "set")]
@@ -56,15 +59,14 @@ enum Cli {
         name: String,
 
         /// Get setting. Accepts cache_mode, and sequential_cutoff
-        setting: String
+        setting: String,
     },
 
     /// Load a configuration file
     #[structopt(name = "load")]
     Config {
         /// Path to configuration file
-        #[structopt(default_value = "/etc/bcache/bcache.conf",
-                    parse(from_os_str))]
+        #[structopt(default_value = "/etc/bcache/bcache.conf", parse(from_os_str))]
         path: PathBuf,
     },
 
@@ -72,81 +74,91 @@ enum Cli {
     #[structopt(name = "suspend")]
     Suspend {
         /// Path to configuration file
-        #[structopt(default_value = "/etc/bcache/bcache.conf",
-                    parse(from_os_str))]
+        #[structopt(default_value = "/etc/bcache/bcache.conf", parse(from_os_str))]
         path: PathBuf,
     },
 }
 
 // Methods for the `Commands` object
 impl Commands {
-    pub fn new () -> Self {
-        Commands { commands: HashMap::new(), args: Cli::from_args() }
+    pub fn new() -> Self {
+        Commands {
+            commands: HashMap::new(),
+            args: Cli::from_args(),
+        }
     }
 
     // Parse command-line arguments. Return a `Config` or an `ExitFailure`
-    pub fn parse_args(& self) -> Result<Config, ExitFailure> {
-
+    pub fn parse_args(&self) -> Result<Config, ExitFailure> {
         match &self.args {
             // Set device configuration
-            Cli::Device {name, cache_mode, sequential_cutoff} => {
-
+            Cli::Device {
+                name,
+                cache_mode,
+                sequential_cutoff,
+            } => {
                 if !cache_mode.is_some() && !sequential_cutoff.is_some() {
                     let error = Err(failure::err_msg("no valid setting given"));
-                    return Ok(error.context("See 'bcachectl set' usage"
-                                            .to_string())?);
+                    return Ok(error.context("See 'bcachectl set' usage".to_string())?);
                 }
 
-                let device = Device {name: name.to_string(), cache_mode:
-                                     cache_mode.clone(), sequential_cutoff:
-                                     sequential_cutoff.clone(),
-                                     get_setting: None };
+                let device = Device {
+                    name: name.to_string(),
+                    cache_mode: cache_mode.clone(),
+                    sequential_cutoff: sequential_cutoff.clone(),
+                    get_setting: None,
+                };
 
-                return Ok(Config {device: vec![device]});
-            },
+                return Ok(Config {
+                    device: vec![device],
+                });
+            }
             // Load configuration file
-            Cli::Config {path} => {
+            Cli::Config { path } => {
                 return self.parse_conf(path.to_path_buf());
-            },
+            }
             // Set all device cache modes to 'none'
-            Cli::Suspend {path} => {
+            Cli::Suspend { path } => {
                 let mut config = self.parse_conf(path.to_path_buf())?;
 
                 for dev in config.device.iter_mut() {
                     dev.cache_mode = Some(String::from("none"));
                 }
 
-                return Ok(config)
-            },
+                return Ok(config);
+            }
             // Get device setting
-            Cli::Get {name, setting} => {
+            Cli::Get { name, setting } => {
                 let value = match setting.as_str() {
                     "cache_mode" => Some(String::from("cache_mode")),
-                    "sequential_cutoff" => Some(String::from(
-                        "sequential_cutoff")),
-                    _ => { let error = Err(failure::err_msg("no valid setting given"));
-                           return Ok(error.context("See 'bcachectl get' usage"
-                                                   .to_string())?); },
+                    "sequential_cutoff" => Some(String::from("sequential_cutoff")),
+                    _ => {
+                        let error = Err(failure::err_msg("no valid setting given"));
+                        return Ok(error.context("See 'bcachectl get' usage".to_string())?);
+                    }
                 };
 
-                let device = Device {name: name.to_string(), cache_mode: None,
-                                     sequential_cutoff: None,
-                                     get_setting: value};
+                let device = Device {
+                    name: name.to_string(),
+                    cache_mode: None,
+                    sequential_cutoff: None,
+                    get_setting: value,
+                };
 
-                return Ok(Config {device: vec![device]});
+                return Ok(Config {
+                    device: vec![device],
+                });
             }
-
         }
     }
 
     // Parse configuration file. Take a path to file and return a `Config` or an
     // `ExitFailure`
     fn parse_conf(&self, path: PathBuf) -> Result<Config, ExitFailure> {
-
-        let contents = fs::read_to_string(&path).with_context(|_| format!(
-            "could not read file {}", path.display()))?;
-        let config: Config = toml::from_str(&contents).with_context(|_| format!(
-            "could not parse file {}", path.display()))?;
+        let contents = fs::read_to_string(&path)
+            .with_context(|_| format!("could not read file {}", path.display()))?;
+        let config: Config = toml::from_str(&contents)
+            .with_context(|_| format!("could not parse file {}", path.display()))?;
 
         Ok(config)
     }
@@ -184,18 +196,16 @@ impl Commands {
     pub fn run_commands(&mut self) -> Result<Vec<String>, ExitFailure> {
         let mut output: Vec<String> = Vec::new();
 
-        for (path, value) in & self.commands {
-
+        for (path, value) in &self.commands {
             if value.is_some() {
                 fs::write(&path, value.clone().unwrap())
-                    .with_context(|_| format!("Could not write to file {}",
-                                              path.display()))?;
-            }
-            else {
-                &output.push(format!("{}", fs::read_to_string(&path)
-                                     .with_context(|_| format!(
-                                         "Could not read file {}",
-                                         path.display()))?));
+                    .with_context(|_| format!("Could not write to file {}", path.display()))?;
+            } else {
+                &output.push(format!(
+                    "{}",
+                    fs::read_to_string(&path)
+                        .with_context(|_| format!("Could not read file {}", path.display()))?
+                ));
             }
         }
 
